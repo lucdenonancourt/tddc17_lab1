@@ -62,7 +62,6 @@ class MyAgentState
 				break;
 			}
 	    }
-		
 	}
 	
 	public void updateWorld(int x_position, int y_position, int info)
@@ -143,7 +142,6 @@ class MyAgentProgram implements AgentProgram {
     	System.out.println("x=" + state.agent_x_position);
     	System.out.println("y=" + state.agent_y_position);
     	System.out.println("dir=" + state.agent_direction);
-    	
 		
 	    iterationCounter--;
 	    
@@ -158,29 +156,10 @@ class MyAgentProgram implements AgentProgram {
 	    
 	    // State update based on the percept value and the last action
 	    state.updatePosition((DynamicPercept)percept);
-	    if (bump) {
-			switch (state.agent_direction) {
-			case MyAgentState.NORTH:
-				state.updateWorld(state.agent_x_position,state.agent_y_position-1,state.WALL);
-				break;
-			case MyAgentState.EAST:
-				state.updateWorld(state.agent_x_position+1,state.agent_y_position,state.WALL);
-				break;
-			case MyAgentState.SOUTH:
-				state.updateWorld(state.agent_x_position,state.agent_y_position+1,state.WALL);
-				break;
-			case MyAgentState.WEST:
-				state.updateWorld(state.agent_x_position-1,state.agent_y_position,state.WALL);
-				break;
-			}
-	    }
-	    if (dirt)
-	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
-	    else
-	    	state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
+	    
+	    updateWorldfromExecute(bump, dirt);
 	    
 	    state.printWorldDebug();
-	    
 	    
 	    // Next action selection based on the percept value
 	    if (dirt)	    {
@@ -201,7 +180,32 @@ class MyAgentProgram implements AgentProgram {
 	    	}
 	    }
 	}
+	
+	private void updateWorldfromExecute(boolean bump, boolean dirt) {
+		if (bump) {
+			switch (state.agent_direction) {
+			case MyAgentState.NORTH:
+				state.updateWorld(state.agent_x_position,state.agent_y_position-1,state.WALL);
+				break;
+			case MyAgentState.EAST:
+				state.updateWorld(state.agent_x_position+1,state.agent_y_position,state.WALL);
+				break;
+			case MyAgentState.SOUTH:
+				state.updateWorld(state.agent_x_position,state.agent_y_position+1,state.WALL);
+				break;
+			case MyAgentState.WEST:
+				state.updateWorld(state.agent_x_position-1,state.agent_y_position,state.WALL);
+				break;
+			}
+		}
+		if (dirt)
+			state.updateWorld(state.agent_x_position,state.agent_y_position,state.DIRT);
+		else
+			state.updateWorld(state.agent_x_position,state.agent_y_position,state.CLEAR);
+	}
+
 }
+
 
 public class MyVacuumAgent extends AbstractAgent {
     public MyVacuumAgent() {
