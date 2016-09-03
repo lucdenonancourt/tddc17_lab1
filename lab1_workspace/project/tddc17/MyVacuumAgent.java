@@ -34,8 +34,7 @@ class MyAgentState
 	public static final int WEST = 3;
 	public int agent_direction = EAST;
 	
-	MyAgentState()
-	{
+	MyAgentState() {
 		for (int i=0; i < world.length; i++)
 			for (int j=0; j < world[i].length ; j++)
 				world[i][j] = UNKNOWN;
@@ -47,8 +46,7 @@ class MyAgentState
 	{
 		Boolean bump = (Boolean)p.getAttribute("bump");
 
-		if (agent_last_action==ACTION_MOVE_FORWARD && !bump)
-	    {
+		if (agent_last_action==ACTION_MOVE_FORWARD && !bump)   {
 			switch (agent_direction) {
 			case MyAgentState.NORTH:
 				agent_y_position--;
@@ -74,10 +72,8 @@ class MyAgentState
 	
 	public void printWorldDebug()
 	{
-		for (int i=0; i < world.length; i++)
-		{
-			for (int j=0; j < world[i].length ; j++)
-			{
+		for (int i=0; i < world.length; i++) {
+			for (int j=0; j < world[i].length ; j++)	{
 				if (world[j][i]==UNKNOWN)
 					System.out.print(" ? ");
 				if (world[j][i]==WALL)
@@ -100,7 +96,7 @@ class MyAgentProgram implements AgentProgram {
 	private Random random_generator = new Random();
 	
 	// Here you can define your variables!
-	public int iterationCounter = 10;
+	public int iterationCounter = 20;
 	public MyAgentState state = new MyAgentState();
 	
 	// moves the Agent to a random start position
@@ -187,21 +183,19 @@ class MyAgentProgram implements AgentProgram {
 	    
 	    
 	    // Next action selection based on the percept value
-	    if (dirt)
-	    {
+	    if (dirt)	    {
 	    	System.out.println("DIRT -> choosing SUCK action!");
 	    	state.agent_last_action=state.ACTION_SUCK;
 	    	return LIUVacuumEnvironment.ACTION_SUCK;
-	    } 
-	    else
-	    {
-	    	if (bump)
-	    	{
-	    		state.agent_last_action=state.ACTION_NONE;
-		    	return NoOpAction.NO_OP;
-	    	}
-	    	else
-	    	{
+	    } else	{
+	    	if (bump)  	{
+	    		state.agent_last_action=state.ACTION_TURN_RIGHT;
+	    		state.agent_direction = state.agent_direction +1;
+	    		if (state.agent_direction==4) {
+	    			state.agent_direction=0;
+	    		}
+		    	return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+	    	} 	else  	{
 	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
 	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	    	}
