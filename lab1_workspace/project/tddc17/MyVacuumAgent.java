@@ -24,6 +24,8 @@ class MyAgentState
 	final int ACTION_TURN_LEFT 		= 3;
 	final int ACTION_SUCK	 		= 4;
 	
+	public boolean turnAround = false;
+	
 	public int agent_x_position = 1;
 	public int agent_y_position = 1;
 	public int agent_last_action = ACTION_NONE;
@@ -87,6 +89,43 @@ class MyAgentState
 			System.out.println("");
 		}
 	}
+	
+
+	public boolean isKnownPosition(int xpos, int ypos) {
+		return world[xpos][ypos]!=UNKNOWN;
+	}
+	
+
+	public boolean rightIsAlreadyKnown() {
+		switch (agent_direction) {
+		case MyAgentState.NORTH:
+			return isKnownPosition(agent_x_position+1, agent_y_position);
+		case MyAgentState.EAST:
+			return isKnownPosition(agent_x_position, agent_y_position+1);
+		case MyAgentState.SOUTH:
+			return isKnownPosition(agent_x_position-1, agent_y_position);
+		case MyAgentState.WEST:
+			return isKnownPosition(agent_x_position, agent_y_position-1);
+		default:
+			return false;
+		}
+	}
+	
+	public boolean leftIsAlreadyKnown() {
+		switch (agent_direction) {
+		case MyAgentState.NORTH:
+			return isKnownPosition(agent_x_position-1, agent_y_position);
+		case MyAgentState.EAST:
+			return isKnownPosition(agent_x_position, agent_y_position-1);
+		case MyAgentState.SOUTH:
+			return isKnownPosition(agent_x_position+1, agent_y_position);
+		case MyAgentState.WEST:
+			return isKnownPosition(agent_x_position, agent_y_position+1);
+		default:
+			return false;
+		}
+	}
+	
 }
 
 class MyAgentProgram implements AgentProgram {
@@ -95,7 +134,7 @@ class MyAgentProgram implements AgentProgram {
 	private Random random_generator = new Random();
 	
 	// Here you can define your variables!
-	public int iterationCounter = 20;
+	public int iterationCounter = 100;
 	public MyAgentState state = new MyAgentState();
 	
 	// moves the Agent to a random start position
@@ -105,6 +144,7 @@ class MyAgentProgram implements AgentProgram {
 		int action = random_generator.nextInt(6);
 		initnialRandomActions--;
 		state.updatePosition(percept);
+	
 		if(action==0) {
 		    state.agent_direction = ((state.agent_direction-1) % 4);
 		    if (state.agent_direction<0) 
@@ -138,7 +178,7 @@ class MyAgentProgram implements AgentProgram {
 		
     	// This example agent program will update the internal agent state while only moving forward.
     	// START HERE - code below should be modified!
-    	    	
+    	
     	System.out.println("x=" + state.agent_x_position);
     	System.out.println("y=" + state.agent_y_position);
     	System.out.println("dir=" + state.agent_direction);
@@ -167,20 +207,69 @@ class MyAgentProgram implements AgentProgram {
 	    	state.agent_last_action=state.ACTION_SUCK;
 	    	return LIUVacuumEnvironment.ACTION_SUCK;
 	    } else	{
-	    	if (bump)  	{
-	    		state.agent_last_action=state.ACTION_TURN_RIGHT;
-	    		state.agent_direction = state.agent_direction +1;
-	    		if (state.agent_direction==4) {
-	    			state.agent_direction=0;
-	    		}
-		    	return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
-	    	} 	else  	{
-	    		state.agent_last_action=state.ACTION_MOVE_FORWARD;
-	    		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
-	    	}
+	    	return deliberativePart(bump);
+	    	
 	    }
 	}
 	
+	private Action deliberativePart(boolean bump) {
+		if (bump)  	{
+//    		state.agent_last_action=state.ACTION_TURN_RIGHT;
+//    		state.agent_direction = state.agent_direction +1;
+//    		if (state.agent_direction==4) {
+//    			state.agent_direction=0;
+//    		}
+			if(!state.rightIsAlreadyKnown()) {
+				return turnRight();
+			}  
+			if(!state.leftIsAlreadyKnown()) {
+				return turnLeft();
+			}
+		
+			if(state.turnAround) {
+				if(state.agent_last_action==state.ACTION_TURN_RIGHT) {
+					return turnRight();
+				} else {
+					state.turnAround = false;
+					return moveForward();
+				}
+			} else {
+				state.turnAround = true;
+				return turnRight();
+			}
+    	} 	else  {
+    		return moveForward();
+    	}
+	}
+	
+	private Action moveForward()  {
+		state.agent_last_action=state.ACTION_MOVE_FORWARD;
+		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
+	}
+	
+	
+	
+	private Action turnRight() {
+		state.agent_last_action=state.ACTION_TURN_RIGHT;
+		state.agent_direction = state.agent_direction +1;
+		if (state.agent_direction==4) {
+			state.agent_direction=0;
+		}
+    	return LIUVacuumEnvironment.ACTION_TURN_RIGHT;
+	}
+	
+	private Action turnLeft() {
+		state.agent_last_action=state.ACTION_TURN_RIGHT;
+		state.agent_direction = state.agent_direction -1;
+		if (state.agent_direction==-1) {
+			state.agent_direction=3;
+		}
+    	return LIUVacuumEnvironment.ACTION_TURN_LEFT;
+	}
+
+	
+	
+	// refactor of the update function
 	private void updateWorldfromExecute(boolean bump, boolean dirt) {
 		if (bump) {
 			switch (state.agent_direction) {
