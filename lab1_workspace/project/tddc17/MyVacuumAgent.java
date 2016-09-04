@@ -208,7 +208,6 @@ class MyAgentProgram implements AgentProgram {
 	    	return LIUVacuumEnvironment.ACTION_SUCK;
 	    } else	{
 	    	return deliberativePart(bump);
-	    	
 	    }
 	}
 	
@@ -247,8 +246,6 @@ class MyAgentProgram implements AgentProgram {
 		return LIUVacuumEnvironment.ACTION_MOVE_FORWARD;
 	}
 	
-	
-	
 	private Action turnRight() {
 		state.agent_last_action=state.ACTION_TURN_RIGHT;
 		state.agent_direction = state.agent_direction +1;
@@ -259,7 +256,7 @@ class MyAgentProgram implements AgentProgram {
 	}
 	
 	private Action turnLeft() {
-		state.agent_last_action=state.ACTION_TURN_RIGHT;
+		state.agent_last_action=state.ACTION_TURN_LEFT;
 		state.agent_direction = state.agent_direction -1;
 		if (state.agent_direction==-1) {
 			state.agent_direction=3;
