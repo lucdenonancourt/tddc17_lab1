@@ -119,6 +119,36 @@ class MyAgentState
 		}
 	}
 	
+	public boolean rightIsOK() {
+		switch (agent_direction) {
+		case MyAgentState.NORTH:
+			return isPositionOK(agent_x_position+1, agent_y_position);
+		case MyAgentState.EAST:
+			return isPositionOK(agent_x_position, agent_y_position+1);
+		case MyAgentState.SOUTH:
+			return isPositionOK(agent_x_position-1, agent_y_position);
+		case MyAgentState.WEST:
+			return isPositionOK(agent_x_position, agent_y_position-1);
+		default:
+			return false;
+		}
+	}
+	
+	public boolean leftIsOK() {
+		switch (agent_direction) {
+		case MyAgentState.NORTH:
+			return isPositionOK(agent_x_position-1, agent_y_position);
+		case MyAgentState.EAST:
+			return isPositionOK(agent_x_position, agent_y_position-1);
+		case MyAgentState.SOUTH:
+			return isPositionOK(agent_x_position+1, agent_y_position);
+		case MyAgentState.WEST:
+			return isPositionOK(agent_x_position, agent_y_position+1);
+		default:
+			return false;
+		}
+	}
+	
 
 	public boolean rightIsAlreadyKnown() {
 		switch (agent_direction) {
@@ -238,7 +268,7 @@ class MyAgentProgram implements AgentProgram {
 	}
 	
 	private Action deliberativePart(boolean bump) {
-		if(state.getMiniNumberofMovementFromHome() +5 > iterationCounter && !state.gohome) {
+		if(!state.gohome && state.getMiniNumberofMovementFromHome() +5 > iterationCounter) {
 			state.gohome = true;
 		}
 		
@@ -247,19 +277,13 @@ class MyAgentProgram implements AgentProgram {
 		}
 		
 		if (bump)  	{
-			if(!state.rightIsAlreadyKnown()) {
+			if(!state.rightIsAlreadyKnown() || state.rightIsOK()) {
 				return turnRight();
-			}  
-			if(!state.leftIsAlreadyKnown()) {
+			} else if(!state.leftIsAlreadyKnown() || state.leftIsOK()) {
 				return turnLeft();
-			}
-			if(state.turnAround) {
-				if(state.agent_last_action==state.ACTION_TURN_RIGHT) {
-					return turnRight();
-				} else {
-					state.turnAround = false;
-					return moveForward();
-				}
+			} else if(state.turnAround) {
+				state.turnAround = false;
+				return turnRight();
 			} else {
 				state.turnAround = true;
 				return turnRight();
