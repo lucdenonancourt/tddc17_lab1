@@ -27,6 +27,11 @@ class MyAgentState
 	public boolean turnAround = false;
 	public boolean gohome = false;
 	
+	public int nbStepOnKnownPath =0;
+	public boolean start=false;
+	public boolean RightTurn=false;
+	
+	public boolean comeback=false;
 	public int agent_x_position = 1;
 	public int agent_y_position = 1;
 	public int agent_last_action = ACTION_NONE;
@@ -149,7 +154,6 @@ class MyAgentState
 		}
 	}
 	
-
 	public boolean rightIsAlreadyKnown() {
 		switch (agent_direction) {
 		case MyAgentState.NORTH:
@@ -253,12 +257,16 @@ class MyAgentProgram implements AgentProgram {
 	    // State update based on the percept value and the last action
 	    state.updatePosition((DynamicPercept)percept);
 	    
+	    if(bump && !state.frontIsOK()) {
+	    	state.comeback = true;
+	    }
+	    
 	    updateWorldfromExecute(bump, dirt);
 	    
 	    state.printWorldDebug();
 	    
 	    // Next action selection based on the percept value
-	    if (dirt)	    {
+	    if (dirt)  {
 	    	System.out.println("DIRT -> choosing SUCK action!");
 	    	state.agent_last_action=state.ACTION_SUCK;
 	    	return LIUVacuumEnvironment.ACTION_SUCK;
@@ -276,22 +284,107 @@ class MyAgentProgram implements AgentProgram {
 			return moveTorwardHome();
 		}
 		
-		if (bump)  	{
-			if(!state.rightIsAlreadyKnown() || state.rightIsOK()) {
+		if(state.comeback) {
+			if(state.agent_x_position==1 && state.agent_y_position==1) {
+				return NoOpAction.NO_OP;
+			}
+			
+			if(!bump) {
+				if(state.agent_direction==0) {			
+					return turnAround();
+				}
+				return moveForward();
+			} else if(state.agent_direction==3) {
+				state.RightTurn = true;
 				return turnRight();
-			} else if(!state.leftIsAlreadyKnown() || state.leftIsOK()) {
+			} else if(state.agent_direction==1) {
+				state.RightTurn = false;
 				return turnLeft();
-			} else if(state.turnAround) {
-				state.turnAround = false;
+			} else {
+				return manageBump();
+			}
+		}
+
+		if(state.agent_direction!=1 && state.start==false) {
+			return turnRight();
+		} else {
+			state.start=true;
+		}
+		
+		if(!bump) {
+			if(state.agent_direction==2) {			
+				return turnAround();
+			}
+			return moveForward();
+		} else if(state.agent_direction==1) {
+			state.RightTurn = true;
+			return turnRight();
+		} else if(state.agent_direction==3) {
+			state.RightTurn = false;
+			return turnLeft();
+		} else {
+			return manageBump();
+		}
+		
+		
+		// se positionner en dir=east
+		// avancer de X
+		// tourner a droite
+		// avancer de 1
+		// tourner à droite
+		// avancer de X
+		// tourner a gauche
+		// avancer de 1
+		// tourner à gauche
+		// avance de X
+		
+		//if(state.isKnownPosition(state.agent_x_position, state.agent_y_position)) {
+		//	nbStepOnKnownPath++;
+		//}
+		
+//		if (bump)  	{
+//			if(!state.rightIsAlreadyKnown() || state.rightIsOK()) {
+//				return turnRight();
+//			} else if(!state.leftIsAlreadyKnown() || state.leftIsOK()) {
+//				return turnLeft();
+//			} else if(state.turnAround) {
+//				state.turnAround = false;
+//				return turnRight();
+//			} else {
+//				state.turnAround = true;
+//				return turnRight();
+//			}
+//    	} 	else  {
+//    		return moveForward();
+//    	}
+	}
+
+	private Action turnAround() {
+		if(state.agent_last_action==state.ACTION_MOVE_FORWARD) {
+			if(state.RightTurn) {
 				return turnRight();
 			} else {
-				state.turnAround = true;
-				return turnRight();
-			}
-    	} 	else  {
-    		return moveForward();
-    	}
+				return turnLeft();
+			}									
+		} else {
+			return moveForward();
+		}
 	}
+
+	private Action manageBump() {
+		if(!state.rightIsAlreadyKnown() || state.rightIsOK()) {
+			return turnRight();
+		} else if(!state.leftIsAlreadyKnown() || state.leftIsOK()) {
+			return turnLeft();
+		} else if(state.turnAround) {
+			state.turnAround = false;
+			return turnRight();
+		} else {
+			state.turnAround = true;
+			return turnRight();
+		}
+	}
+
 	
 	private Action moveTorwardHome() {
 		if(state.agent_x_position==1 && state.agent_y_position==1) {
