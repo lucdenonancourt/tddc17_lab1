@@ -7,11 +7,13 @@ import aima.core.agent.AgentProgram;
 import aima.core.agent.Percept;
 import aima.core.agent.impl.*;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 class MyAgentState
 {
 	public int[][] world = new int[30][30];
+	public ArrayList<Coordinates> path = new ArrayList<>();
 	public int initialized = 0;
 	final int UNKNOWN 	= 0;
 	final int WALL 		= 1;
@@ -261,6 +263,10 @@ class MyAgentProgram implements AgentProgram {
 	    	state.comeback = true;
 	    }
 	    
+	    if(!bump) {
+	    	state.path.add(new Coordinates(state.agent_x_position, state.agent_y_position));
+	    }
+	    
 	    updateWorldfromExecute(bump, dirt);
 	    
 	    state.printWorldDebug();
@@ -326,37 +332,6 @@ class MyAgentProgram implements AgentProgram {
 			return manageBump();
 		}
 		
-		
-		// se positionner en dir=east
-		// avancer de X
-		// tourner a droite
-		// avancer de 1
-		// tourner à droite
-		// avancer de X
-		// tourner a gauche
-		// avancer de 1
-		// tourner à gauche
-		// avance de X
-		
-		//if(state.isKnownPosition(state.agent_x_position, state.agent_y_position)) {
-		//	nbStepOnKnownPath++;
-		//}
-		
-//		if (bump)  	{
-//			if(!state.rightIsAlreadyKnown() || state.rightIsOK()) {
-//				return turnRight();
-//			} else if(!state.leftIsAlreadyKnown() || state.leftIsOK()) {
-//				return turnLeft();
-//			} else if(state.turnAround) {
-//				state.turnAround = false;
-//				return turnRight();
-//			} else {
-//				state.turnAround = true;
-//				return turnRight();
-//			}
-//    	} 	else  {
-//    		return moveForward();
-//    	}
 	}
 
 	private Action turnAround() {
@@ -391,6 +366,10 @@ class MyAgentProgram implements AgentProgram {
 			state.gohome=false;
 			return NoOpAction.NO_OP;
 		}
+		
+		Coordinates home = new Coordinates(1, 1);
+		
+		home.distance(home);
 		
 		if(state.agent_direction==0 && state.agent_y_position > 1) {
 			if(state.frontIsOK()) {
