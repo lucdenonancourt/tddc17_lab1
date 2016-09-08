@@ -13,7 +13,6 @@ import java.util.Random;
 class MyAgentState
 {
 	public int[][] world = new int[30][30];
-	public ArrayList<Coordinates> path = new ArrayList<>();
 	public int initialized = 0;
 	final int UNKNOWN 	= 0;
 	final int WALL 		= 1;
@@ -107,6 +106,10 @@ class MyAgentState
 		return world[xpos][ypos]!=WALL;
 	}
 	
+	public boolean isPositionClear(int xpos, int ypos) {
+		return world[xpos][ypos]==CLEAR;
+	}
+	
 	public int getMiniNumberofMovementFromHome() {
 		return this.agent_x_position -1 + this.agent_y_position -1;
 	}
@@ -154,6 +157,63 @@ class MyAgentState
 		default:
 			return false;
 		}
+	}
+	
+	public boolean frontIsClear() {
+		return isPositionClear(getFront().getXpos(), getFront().getYpos());
+	}
+	
+	public Coordinates getFront() {
+		switch (agent_direction) {
+		case MyAgentState.NORTH:
+			return new Coordinates(agent_x_position, agent_y_position-1);
+		case MyAgentState.EAST:
+			return new Coordinates(agent_x_position+1, agent_y_position);
+		case MyAgentState.SOUTH:
+			return new Coordinates(agent_x_position, agent_y_position+1);
+		case MyAgentState.WEST:
+			return new Coordinates(agent_x_position-1, agent_y_position);
+		default:
+			return new Coordinates(0,0);
+		}
+	}
+	
+	public Coordinates getLeft() {
+		switch (agent_direction) {
+		case MyAgentState.NORTH:
+			return new Coordinates(agent_x_position-1, agent_y_position);
+		case MyAgentState.EAST:
+			return new Coordinates(agent_x_position, agent_y_position-1);
+		case MyAgentState.SOUTH:
+			return new Coordinates(agent_x_position+1, agent_y_position);
+		case MyAgentState.WEST:
+			return new Coordinates(agent_x_position, agent_y_position+1);
+		default:
+			return new Coordinates(0,0);
+		}
+	}
+
+	public Coordinates getRight() {
+		switch (agent_direction) {
+		case MyAgentState.NORTH:
+			return  new Coordinates(agent_x_position+1, agent_y_position);
+		case MyAgentState.EAST:
+			return  new Coordinates(agent_x_position, agent_y_position+1);
+		case MyAgentState.SOUTH:
+			return  new Coordinates(agent_x_position-1, agent_y_position);
+		case MyAgentState.WEST:
+			return  new Coordinates(agent_x_position, agent_y_position-1);
+		default:
+			return new Coordinates(0,0);
+		}
+	}
+	
+	public boolean rightIsClear() {
+		return isPositionClear(getRight().getXpos(), getRight().getYpos());
+	}
+	
+	public boolean leftIsClear() {
+		return isPositionClear(getLeft().getXpos(), getLeft().getYpos());
 	}
 	
 	public boolean rightIsAlreadyKnown() {
@@ -263,10 +323,6 @@ class MyAgentProgram implements AgentProgram {
 	    	state.comeback = true;
 	    }
 	    
-	    if(!bump) {
-	    	state.path.add(new Coordinates(state.agent_x_position, state.agent_y_position));
-	    }
-	    
 	    updateWorldfromExecute(bump, dirt);
 	    
 	    state.printWorldDebug();
@@ -282,7 +338,7 @@ class MyAgentProgram implements AgentProgram {
 	}
 	
 	private Action deliberativePart(boolean bump) {
-		if(!state.gohome && state.getMiniNumberofMovementFromHome() +5 > iterationCounter) {
+		if(!state.gohome && state.getMiniNumberofMovementFromHome() +15 > iterationCounter) {
 			state.gohome = true;
 		}
 		
@@ -359,7 +415,6 @@ class MyAgentProgram implements AgentProgram {
 			return turnRight();
 		}
 	}
-
 	
 	private Action moveTorwardHome() {
 		if(state.agent_x_position==1 && state.agent_y_position==1) {
@@ -368,24 +423,23 @@ class MyAgentProgram implements AgentProgram {
 		}
 		
 		Coordinates home = new Coordinates(1, 1);
+		Coordinates current = new Coordinates(state.agent_x_position, state.agent_y_position);
 		
-		home.distance(home);
 		
-		if(state.agent_direction==0 && state.agent_y_position > 1) {
-			if(state.frontIsOK()) {
-				return moveForward();
-			} else {
-				return turnLeft();
-			}			
-		} else if(state.agent_direction==3 && state.agent_x_position > 1) {
-			if(state.frontIsOK()) {
-				return moveForward();
-			} else {
-				return turnRight();
-			}	
-		} else {
-			var_dump();
+		if(state.frontIsClear() && state.getFront().distance(home)< current.distance(home)) {
+			return moveForward();
+		} else if(state.leftIsClear() && state.getLeft().distance(home)< current.distance(home)) {
+			return turnLeft();
+		} else if(state.rightIsClear() && state.getRight().distance(home)< current.distance(home)) {
 			return turnRight();
+		} else if(state.frontIsClear()) {
+			return moveForward();
+		} else if(state.leftIsClear()){
+			return turnLeft();
+		} else if(state.rightIsClear()) {
+			return turnRight();
+		} else {
+			return turnLeft();
 		}
 
 	}
