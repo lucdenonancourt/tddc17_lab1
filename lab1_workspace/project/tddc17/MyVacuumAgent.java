@@ -320,8 +320,18 @@ class MyAgentProgram implements AgentProgram {
 	    state.updatePosition((DynamicPercept)percept);
 	    
 	    if(bump && !state.frontIsOK()) {
-	    	state.comeback = true;
-	    }
+	    	if(!state.comeback && state.agent_direction==1 && state.rightIsOK()) {
+	    		state.RightTurn = true;
+	    		return turnRight();
+	    	}
+	    	else if(!state.comeback && state.agent_direction==3 && state.leftIsOK()) {
+	    		state.RightTurn = false;
+	    		return turnLeft();
+	    	}
+	    	else{
+	    		state.comeback = true;
+	    	}
+	    };
 	    
 	    updateWorldfromExecute(bump, dirt);
 	    
@@ -391,7 +401,7 @@ class MyAgentProgram implements AgentProgram {
 	}
 
 	private Action turnAround() {
-		if(state.agent_last_action==state.ACTION_MOVE_FORWARD) {
+		if(state.agent_last_action==state.ACTION_MOVE_FORWARD || state.agent_last_action==state.ACTION_SUCK) {
 			if(state.RightTurn) {
 				return turnRight();
 			} else {
