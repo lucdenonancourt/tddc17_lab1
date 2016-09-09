@@ -432,25 +432,41 @@ class MyAgentProgram implements AgentProgram {
 			return NoOpAction.NO_OP;
 		}
 		
-		Coordinates home = new Coordinates(1, 1);
-		Coordinates current = new Coordinates(state.agent_x_position, state.agent_y_position);
-		
-		
-		if(state.frontIsClear() && state.getFront().distance(home)< current.distance(home)) {
-			return moveForward();
-		} else if(state.leftIsClear() && state.getLeft().distance(home)< current.distance(home)) {
-			return turnLeft();
-		} else if(state.rightIsClear() && state.getRight().distance(home)< current.distance(home)) {
-			return turnRight();
-		} else if(state.frontIsClear()) {
-			return moveForward();
-		} else if(state.leftIsClear()){
-			return turnLeft();
-		} else if(state.rightIsClear()) {
-			return turnRight();
+		if(state.agent_direction==0 && state.agent_y_position > 1) {
+			 if(state.frontIsOK()) {
+			 	return moveForward();
+			 } else {
+			 	return turnLeft();
+			 }			
+		}  else if(state.agent_direction==3 && state.agent_x_position > 1) {
+			if(state.frontIsOK()) {
+				return moveForward();
+			} else {
+				return turnRight();
+			}	
 		} else {
-			return turnLeft();
+			return turnAround();
 		}
+		
+//		Coordinates home = new Coordinates(1, 1);
+//		Coordinates current = new Coordinates(state.agent_x_position, state.agent_y_position);
+//		
+//		
+//		if(state.frontIsClear() && state.getFront().distance(home)< current.distance(home)) {
+//			return moveForward();
+//		} else if(state.leftIsClear() && state.getLeft().distance(home)< current.distance(home)) {
+//			return turnLeft();
+//		} else if(state.rightIsClear() && state.getRight().distance(home)< current.distance(home)) {
+//			return turnRight();
+//		} else if(state.frontIsClear()) {
+//			return moveForward();
+//		} else if(state.leftIsClear()){
+//			return turnLeft();
+//		} else if(state.rightIsClear()) {
+//			return turnRight();
+//		} else {
+//			return turnLeft();
+//		}
 
 	}
 	
